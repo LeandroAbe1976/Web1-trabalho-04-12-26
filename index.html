@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanças Fluxo Livre - Controle Universal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ========================================== -->
+    <!-- TELA DE AUTENTICAÇÃO (LOGIN / CADASTRO / RECUPERAÇÃO) -->
+    <!-- ========================================== -->
+    <div id="container-autenticacao" class="auth-container">
+        
+        <!-- Bloco de Login -->
+        <section id="secao-login" class="auth-card">
+            <h2>🔑 Entrar no Sistema</h2>
+            <form id="form-login">
+                <div class="campo">
+                    <label for="login-usuario">Usuário:</label>
+                    <input type="text" id="login-usuario" required placeholder="Digite seu usuário">
+                </div>
+                <div class="campo">
+                    <label for="login-senha">Senha:</label>
+                    <input type="password" id="login-senha" required placeholder="Digite sua senha">
+                </div>
+                <button type="submit" class="btn-primary">Acessar Painel</button>
+                <p class="auth-links">
+                    <a href="#" id="link-ir-cadastro">Criar uma conta</a> | 
+                    <a href="#" id="link-ir-recuperar">Esqueci a senha</a>
+                </p>
+            </form>
+        </section>
+
+        <!-- Bloco de Cadastro -->
+        <section id="secao-cadastro" class="auth-card" style="display: none;">
+            <h2>📝 Criar Conta</h2>
+            <form id="form-cadastro">
+                <div class="campo">
+                    <label for="cad-usuario">Defina o Usuário:</label>
+                    <input type="text" id="cad-usuario" required placeholder="Ex: joao_silva">
+                </div>
+                <div class="campo">
+                    <label for="cad-senha">Defina a Senha:</label>
+                    <input type="password" id="cad-senha" required minlength="4" placeholder="Mínimo 4 caracteres">
+                </div>
+                <div class="campo">
+                    <label for="cad-pergunta">Pergunta de Segurança:</label>
+                    <select id="cad-pergunta" required>
+                        <option value="animal">Qual o nome do seu animal de estimação na infância?</option>
+                        <option value="professor">Qual o nome do professor(a) que você mais gostava?</option>
+                        <option value="amigo">Qual o nome do seu melhor amigo(a) na infância?</option>
+                        <option value="comida">Qual a comida ou fruta que você mais gostava na infância?</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label for="cad-resposta">Resposta de Segurança:</label>
+                    <input type="text" id="cad-resposta" required placeholder="Sua resposta confidencial">
+                    <small>Maiúsculas, acentos e espaços são ignorados na conferência.</small>
+                </div>
+                <button type="submit" class="btn-success">Finalizar Cadastro</button>
+                <p class="auth-links"><a href="#" class="link-voltar-login">Voltar para o Login</a></p>
+            </form>
+        </section>
+
+        <!-- Bloco de Recuperação de Senha -->
+        <section id="secao-recuperar" class="auth-card" style="display: none;">
+            <h2>🔄 Recuperar Senha</h2>
+            <form id="form-recuperar">
+                <div class="campo">
+                    <label for="rec-usuario">Informe seu Usuário:</label>
+                    <input type="text" id="rec-usuario" required placeholder="Seu usuário cadastrado">
+                </div>
+                <div id="bloco-desafio-seguranca" style="display: none;">
+                    <p id="texto-pergunta-seguranca" class="pergunta-destaque"></p>
+                    <div class="campo">
+                        <label for="rec-resposta">Sua Resposta:</label>
+                        <input type="text" id="rec-resposta" placeholder="Digite a resposta de segurança">
+                    </div>
+                </div>
+                <div id="bloco-nova-senha" style="display: none;">
+                    <div class="campo">
+                        <label for="rec-nova-senha">Nova Senha:</label>
+                        <input type="password" id="rec-nova-senha" minlength="4" placeholder="Mínimo 4 caracteres">
+                    </div>
+                </div>
+                <button type="submit" id="btn-recuperar-acao" class="btn-primary">Verificar Usuário</button>
+                <p class="auth-links"><a href="#" class="link-voltar-login">Voltar para o Login</a></p>
+            </form>
+        </section>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ÁREA PRINCIPAL DA APLICAÇÃO (SÓ APARECE APÓS LOGIN) -->
+    <!-- ========================================== -->
+    <div id="app-principal" style="display: none;">
+        
+        <header>
+            <div class="header-conteudo">
+                <div>
+                    <h1>📊 Finanças Fluxo Livre</h1>
+                    <p>Controle financeiro para MEI, Autônomos, Ambulantes e Pessoal</p>
+                </div>
+                <div class="header-acoes">
+                    <select id="seletor-tema" aria-label="Tema">
+                        <option value="auto">🌓 Automático</option>
+                        <option value="claro">☀️ Claro</option>
+                        <option value="escuro">🌙 Escuro</option>
+                    </select>
+                    <button id="btn-logout" class="btn-danger">Sair 🚪</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- PAINEL DINÂMICO DE ALERTAS DE CONTAS -->
+            <section id="painel-alertas" class="secao-alertas" style="display: none;">
+                <h2>⚠️ Lembretes Urgentes de Contas</h2>
+                <div id="lista-alertas-mensagens"></div>
+            </section>
+
+            <!-- DASHBOARD DE METRICAS CONTÁBEIS -->
+            <section class="resumos">
+                <div class="card card-receita">
+                    <h3>Faturamento Bruto</h3>
+                    <p id="total-entradas">R$ 0,00</p>
+                </div>
+                <div class="card card-despesa">
+                    <h3>Custos Operacionais</h3>
+                    <p id="total-saidas">R$ 0,00</p>
+                </div>
+                <div class="card card-saldo">
+                    <h3>Saldo Líquido Atual</h3>
+                    <p id="saldo-liquido">R$ 0,00</p>
+                </div>
+            </section>
+
+            <section class="secao-modulos">
+                <h2>💳 Por forma de pagamento (mês)</h2>
+                <div id="resumo-pagamentos" class="mini-resumo"></div>
+            </section>
+
+            <!-- DIAGNÓSTICO DO FLUXO -->
+            <section class="secao-diagnostico">
+                <h2>📈 Como está seu fluxo</h2>
+                <div id="lista-diagnostico"></div>
+            </section>
+
+            <!-- MÓDULOS OPCIONAIS -->
+            <section class="secao-modulos">
+                <h2>🧩 Meus módulos</h2>
+                <p class="texto-apoio">Ative o que combina com o seu trabalho:</p>
+                <label><input type="checkbox" id="mod-motorista"> 🚗 Motorista de App (km rodados e custo por km)</label>
+                <label><input type="checkbox" id="mod-comercio"> 🏪 Comércio / Banquinha (custo e lucro por produto)</label>
+                <label><input type="checkbox" id="mod-chapeacao"> 🔧 Chapeação e Pintura (orçamentos)</label>
+            </section>
+
+            <!-- CONTAINER DE DOIS LAYOUTS (LADO A LADO NO DESKTOP) -->
+            <div class="grid-operacoes">
+                
+                <!-- COLUNA 1: FLUXO DE CAIXA -->
+                <div class="bloco-operacao">
+                    <section class="formulario-secao">
+                        <h2 id="titulo-form">Nova Movimentação</h2>
+                        <form id="form-financeiro">
+                            <input type="hidden" id="registro-id">
+
+                            <div class="campo">
+                                <label for="perfil">Finalidade do Fluxo:</label>
+                                <select id="perfil" required>
+                                    <option value="Pessoal">🏠 Pessoal (Casa, Lazer, Família)</option>
+                                    <option value="Profissional">💼 Profissional / Negócios</option>
+                                </select>
+                            </div>
+
+                            <div class="campo" id="grupo-subperfil" style="display: none;">
+                                <label for="subperfil">Segmento de Atuação:</label>
+                                <select id="subperfil">
+                                    <option value="Motorista de App">🚗 Motorista de Aplicativo</option>
+                                    <option value="Vendedor Ambulante">🧺 Vendedor Ambulante / Feirante</option>
+                                    <option value="Banquinha / Comercio">🏪 Banquinha / Pequeno Comércio</option>
+                                    <option value="Profissional Liberal">💼 Profissional Liberal / MEI</option>
+                                    <option value="Chapeação e Pintura">🔧 Chapeação e Pintura</option>
+                                </select>
+                            </div>
+
+                            <div class="campo">
+                                <label for="data">Data:</label>
+                                <input type="date" id="data" required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="descricao">Descrição:</label>
+                                <input type="text" id="descricao" placeholder="Ex: Diária App, Reposição estoque" required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="tipo">Direção do Fluxo:</label>
+                                <select id="tipo" required>
+                                    <option value="Receita">🟢 Entrada (Dinheiro que entrou)</option>
+                                    <option value="Despesa">🔴 Saída (Dinheiro que saiu)</option>
+                                </select>
+                            </div>
+
+                            <div class="campo">
+                                <label for="categoria">Categoria:</label>
+                                <input type="text" id="categoria" placeholder="Ex: Combustível, Alimentação, Vendas" required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="valor">Valor (R$):</label>
+                                <input type="text" inputmode="numeric" data-moeda id="valor" placeholder="0,00" required pattern="(?!0,00$).+" title="Informe um valor maior que zero">
+                            </div>
+
+                            <div class="campo">
+                                <label for="pagamento">Forma de pagamento:</label>
+                                <select id="pagamento"><option>Pix</option><option>Dinheiro</option><option>Cartão de débito</option><option>Cartão de crédito</option><option>Outro</option></select>
+                            </div>
+
+                            <div class="campo" id="grupo-origem" style="display: none;">
+                                <label for="origem">De qual aplicativo entrou?</label>
+                                <select id="origem">
+                                    <option>Uber</option>
+                                    <option>99</option>
+                                    <option>inDrive</option>
+                                    <option>Shopee</option>
+                                    <option>Mercado Livre</option>
+                                    <option>Amazon Flex</option>
+                                    <option>Particular</option>
+                                    <option>Outro</option>
+                                </select>
+                            </div>
+
+                            <div id="grupo-separar" class="grupo-separar">
+                                <div class="campo">
+                                    <label for="sep-pct">Separar (%) desta entrada - opcional:</label>
+                                    <input type="number" id="sep-pct" step="any" min="0" max="100" placeholder="Ex: 10">
+                                </div>
+                                <div class="campo">
+                                    <label for="sep-caixinha">Guardar na caixinha:</label>
+                                    <select id="sep-caixinha"></select>
+                                </div>
+                                <div class="campo">
+                                    <label for="sep-nome">Ou dê um nome à separação:</label>
+                                    <input type="text" id="sep-nome" placeholder="Ex: Reserva do carro">
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btn-salvar" class="btn-primary">Salvar Registro</button>
+                            <button type="button" id="btn-cancelar" class="btn-secondary" style="display: none;">Cancelar</button>
+                        </form>
+                    </section>
+
+                    <section class="tabela-secao">
+                        <h2>Histórico de Caixa</h2>
+                        <div class="overflow-tabela">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Tipo</th>
+                                        <th>Valor</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="lista-movimentacoes"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- COLUNA 2: AGENDA DE CONTAS -->
+                <div class="bloco-operacao">
+                    <section class="formulario-secao">
+                        <h2>Agendar Conta a Pagar</h2>
+                        <form id="form-contas">
+                            <div class="campo">
+                                <label for="conta-descricao">Descrição:</label>
+                                <input type="text" id="conta-descricao" placeholder="Ex: Conta de luz" required>
+                            </div>
+                            <div class="campo">
+                                <label for="conta-valor">Valor (R$):</label>
+                                <input type="text" inputmode="numeric" data-moeda id="conta-valor" placeholder="0,00" required pattern="(?!0,00$).+" title="Informe um valor maior que zero">
+                            </div>
+                            <div class="campo">
+                                <label for="conta-vencimento">Vencimento (ou 1ª parcela):</label>
+                                <input type="date" id="conta-vencimento" required>
+                            </div>
+                            <div class="campo">
+                                <label for="conta-alerta">Avisar com antecedência de:</label>
+                                <select id="conta-alerta" required>
+                                    <option value="1">1 dia</option>
+                                    <option value="3" selected>3 dias</option>
+                                    <option value="7">7 dias</option>
+                                </select>
+                            </div>
+                            <div class="campo">
+                                <label for="conta-recorrencia">Frequência:</label>
+                                <select id="conta-recorrencia">
+                                    <option value="unica">Conta única</option>
+                                    <option value="mensal">Recorrente mensal (financiamento, parcelas...)</option>
+                                </select>
+                            </div>
+                            <div class="campo" id="grupo-data-final" style="display: none;">
+                                <label for="conta-data-final">Última parcela (data final):</label>
+                                <input type="date" id="conta-data-final">
+                            </div>
+                            <button type="submit" class="btn-primary">Agendar Conta</button>
+                        </form>
+                    </section>
+
+                    <section class="tabela-secao">
+                        <h2>Contas Agendadas</h2>
+                        <div class="overflow-tabela">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Vencimento</th>
+                                        <th>Descrição</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-contas"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- MOTORISTA DE APP + CAIXINHAS -->
+            <div class="grid-operacoes">
+                <div class="bloco-operacao" id="modulo-motorista" style="display: none;">
+                    <section class="formulario-secao">
+                        <h2>🚗 Painel do Motorista de App</h2>
+                        <p class="texto-apoio">As entradas (Uber, 99, Shopee...) você lança em "Nova Movimentação", escolhendo Profissional → Motorista de App. Aqui ficam os km do dia e os custos.</p>
+                        <div class="campo">
+                            <label for="modo-custo">Como calcular o custo por km?</label>
+                            <select id="modo-custo">
+                                <option value="auto">Automático (combustível + itens de custo)</option>
+                                <option value="manual">Manual (meu valor fixo)</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="custo-km">Custo por km manual (R$):</label>
+                            <input type="text" inputmode="numeric" data-moeda id="custo-km" placeholder="0,00">
+                        </div>
+                        <p id="info-custo" class="texto-apoio"></p>
+                        <form id="form-corrida">
+                            <div class="campo">
+                                <label for="corrida-data">Data:</label>
+                                <input type="date" id="corrida-data" required>
+                            </div>
+                            <div class="campo">
+                                <label for="corrida-km">Km rodados no dia:</label>
+                                <input type="number" id="corrida-km" step="0.1" min="0.1" placeholder="0.0" required>
+                            </div>
+                            <button type="submit" class="btn-primary">Lançar km do dia</button>
+                        </form>
+                    </section>
+
+                    <section class="formulario-secao">
+                        <h2>⛽ Combustível</h2>
+                        <form id="form-abastecimento">
+                            <div class="campo">
+                                <label for="ab-data">Data:</label>
+                                <input type="date" id="ab-data" required>
+                            </div>
+                            <div class="campo">
+                                <label for="ab-litro">Valor do litro (R$):</label>
+                                <input type="text" inputmode="numeric" data-moeda data-casas="3" id="ab-litro" placeholder="0,000" required pattern="(?!0,000$).+" title="Informe o valor do litro">
+                            </div>
+                            <div class="campo">
+                                <label for="ab-litros">Quantos litros:</label>
+                                <input type="number" id="ab-litros" step="any" min="0.01" placeholder="Ex: 40" required>
+                            </div>
+                            <div class="campo">
+                                <label for="ab-km">Km percorridos desde o último abastecimento:</label>
+                                <input type="number" id="ab-km" step="0.1" min="0" placeholder="Ex: 450">
+                            </div>
+                            <div class="campo">
+                                <label for="ab-aditivo-nome">Aditivo (nome do produto) - opcional:</label>
+                                <input type="text" id="ab-aditivo-nome" placeholder="Ex: Aditivo X">
+                            </div>
+                            <div class="campo">
+                                <label for="ab-aditivo-valor">Valor do aditivo (R$):</label>
+                                <input type="text" inputmode="numeric" data-moeda id="ab-aditivo-valor" placeholder="0,00">
+                            </div>
+                            <div class="campo">
+                                <label for="ab-pag">Forma de pagamento:</label>
+                                <select id="ab-pag"><option>Pix</option><option>Dinheiro</option><option>Cartão de débito</option><option>Cartão de crédito</option><option>Outro</option></select>
+                            </div>
+                            <p id="ab-total" class="texto-apoio"></p>
+                            <button type="submit" class="btn-primary">Lançar Abastecimento</button>
+                        </form>
+                        <div id="resumo-combustivel"></div>
+                        <div class="overflow-tabela">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Litros</th>
+                                        <th>Total</th>
+                                        <th>Consumo</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-abastecimentos"></tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <div id="custos-motorista"></div>
+
+                    <section class="tabela-secao">
+                        <h2>Como está rodando este mês</h2>
+                        <div id="cards-apps" class="cards-apps"></div>
+                        <div id="resumo-corridas"></div>
+                        <div class="overflow-tabela">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Km</th>
+                                        <th>Entrou</th>
+                                        <th>Gasto</th>
+                                        <th>Líquido</th>
+                                        <th>% do dia</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-corridas"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="bloco-operacao">
+                    <section class="formulario-secao">
+                        <h2>🐷 Caixinhas</h2>
+                        <p id="resumo-caixinhas" class="texto-apoio"></p>
+                        <form id="form-caixinha">
+                            <div class="campo">
+                                <label for="caixinha-nome">Nome da caixinha:</label>
+                                <input type="text" id="caixinha-nome" list="sugestoes-caixinha" placeholder="Ex: Reserva de emergência" required>
+                                <datalist id="sugestoes-caixinha">
+                                    <option value="Reserva de emergência">
+                                    <option value="Manutenção do veículo">
+                                    <option value="Troca de pneus">
+                                    <option value="Viagem">
+                                </datalist>
+                            </div>
+                            <div class="campo">
+                                <label for="caixinha-meta">Meta (R$) - opcional:</label>
+                                <input type="text" inputmode="numeric" data-moeda id="caixinha-meta" placeholder="0,00">
+                            </div>
+                            <button type="submit" class="btn-primary">Criar Caixinha</button>
+                        </form>
+                    </section>
+
+                    <section class="tabela-secao">
+                        <h2>Minhas caixinhas</h2>
+                        <div id="lista-caixinhas"></div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- COMÉRCIO: INSUMOS E PRODUTOS -->
+            <div class="grid-operacoes" id="modulo-comercio" style="display: none;">
+                <div class="bloco-operacao">
+                    <section class="formulario-secao">
+                        <h2>🛒 Insumos e Mercadorias</h2>
+                        <p class="texto-apoio">Lance o que você comprou. O custo por unidade é calculado sozinho.</p>
+                        <form id="form-insumo">
+                            <div class="campo">
+                                <label for="insumo-nome">Item:</label>
+                                <input type="text" id="insumo-nome" placeholder="Ex: Arroz" required>
+                            </div>
+                            <div class="campo">
+                                <label for="insumo-preco">Valor pago (R$):</label>
+                                <input type="text" inputmode="numeric" data-moeda id="insumo-preco" placeholder="0,00" required pattern="(?!0,00$).+" title="Informe um valor maior que zero">
+                            </div>
+                            <div class="campo">
+                                <label for="insumo-qtd">Quantidade comprada:</label>
+                                <div class="campo-linha">
+                                    <input type="number" id="insumo-qtd" step="any" min="0.0001" placeholder="Ex: 5" required>
+                                    <select id="insumo-unidade">
+                                        <option value="kg">kg</option>
+                                        <option value="g">g</option>
+                                        <option value="L">L</option>
+                                        <option value="ml">ml</option>
+                                        <option value="un">un</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="insumo-pagamento">Forma de pagamento:</label>
+                                <select id="insumo-pagamento"><option>Pix</option><option>Dinheiro</option><option>Cartão de débito</option><option>Cartão de crédito</option><option>Outro</option></select>
+                            </div>
+                            <div class="campo campo-check">
+                                <input type="checkbox" id="insumo-caixa" checked>
+                                <label for="insumo-caixa">Registrar esta compra como saída no caixa</label>
+                            </div>
+                            <button type="submit" id="btn-salvar-insumo" class="btn-primary">Salvar Insumo</button>
+                            <button type="button" id="btn-cancelar-insumo" class="btn-secondary" style="display: none;">Cancelar</button>
+                        </form>
+                    </section>
+
+                    <section class="tabela-secao">
+                        <h2>📊 Resultado do mês</h2>
+                        <div id="resultado-comercio"></div>
+                    </section>
+
+                    <div id="custos-comercio"></div>
+
+                    <section class="tabela-secao">
+                        <h2>Meus insumos</h2>
+                        <div class="overflow-tabela">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Compra</th>
+                                        <th>Custo/unidade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-insumos"></tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="bloco-operacao">
+                    <section class="formulario-secao">
+                        <h2>🏷️ Produtos e Lucro</h2>
+                        <form id="form-produto">
+                            <div class="campo">
+                                <label for="produto-nome">Produto:</label>
+                                <input type="text" id="produto-nome" placeholder="Ex: Marmita" required>
+                            </div>
+                            <div class="campo">
+                                <label for="produto-preco">Preço de venda (R$):</label>
+                                <input type="text" inputmode="numeric" data-moeda id="produto-preco" placeholder="0,00" required pattern="(?!0,00$).+" title="Informe um valor maior que zero">
+                            </div>
+                            <p class="texto-apoio">Quanto de cada insumo vai em 1 unidade vendida:</p>
+                            <div id="itens-produto"></div>
+                            <button type="button" id="btn-add-item" class="btn-secondary">＋ Adicionar insumo</button>
+                            <button type="submit" class="btn-primary">Salvar Produto</button>
+                        </form>
+                    </section>
+
+                    <section class="tabela-secao">
+                        <h2>Lucro por produto</h2>
+                        <div id="lista-produtos"></div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- CHAPEAÇÃO E PINTURA: ORÇAMENTOS -->
+            <div class="grid-operacoes" id="modulo-chapeacao" style="display: none;">
+                <div class="bloco-operacao">
+                    <section class="formulario-secao">
+                        <h2>🔧 Orçamento - Chapeação e Pintura</h2>
+                        <form id="form-orcamento">
+                            <div class="campo">
+                                <label for="orc-cliente">Nome do cliente:</label>
+                                <input type="text" id="orc-cliente" required>
+                            </div>
+                            <div class="campo">
+                                <label for="orc-contato">Contato (telefone):</label>
+                                <input type="tel" id="orc-contato" placeholder="(45) 99999-9999" required>
+                            </div>
+                            <div class="campo">
+                                <label for="orc-veiculo">Carro:</label>
+                                <input type="text" id="orc-veiculo" placeholder="Ex: Gol 2015 prata" required>
+                            </div>
+                            <p class="texto-apoio">Peças e materiais (quantidade e valor de cada unidade):</p>
+                            <div id="itens-orcamento"></div>
+                            <button type="button" id="btn-add-orc" class="btn-secondary">＋ Adicionar peça/material</button>
+                            <div class="campo">
+                                <label for="orc-pct">Acréscimo sobre peças e materiais (%):</label>
+                                <input type="number" id="orc-pct" step="any" min="0" placeholder="Ex: 25" required>
+                            </div>
+                            <div class="campo">
+                                <label for="orc-mao">Mão de obra (R$) - opcional, sem acréscimo:</label>
+                                <input type="text" inputmode="numeric" data-moeda id="orc-mao" placeholder="0,00">
+                            </div>
+                            <div class="campo">
+                                <label for="orc-pagamento">Forma de pagamento prevista:</label>
+                                <select id="orc-pagamento"><option>Pix</option><option>Dinheiro</option><option>Cartão de débito</option><option>Cartão de crédito</option><option>Outro</option></select>
+                            </div>
+                            <div class="grupo-separar">
+                                <div class="campo">
+                                    <label for="orc-sep-pct">Separar (%) quando receber - opcional:</label>
+                                    <input type="number" id="orc-sep-pct" step="any" min="0" max="100" placeholder="Ex: 10">
+                                </div>
+                                <div class="campo">
+                                    <label for="orc-sep-caixinha">Guardar na caixinha:</label>
+                                    <select id="orc-sep-caixinha"></select>
+                                </div>
+                                <div class="campo">
+                                    <label for="orc-sep-nome">Ou dê um nome à separação:</label>
+                                    <input type="text" id="orc-sep-nome" placeholder="Ex: Reserva da oficina">
+                                </div>
+                            </div>
+                            <div id="previa-orcamento" class="previa-orcamento"></div>
+                            <button type="submit" class="btn-primary">Salvar Orçamento</button>
+                        </form>
+                    </section>
+                </div>
+                <div class="bloco-operacao">
+                    <section class="tabela-secao">
+                        <h2>📊 Resultado do mês</h2>
+                        <div id="resultado-chapeacao"></div>
+                    </section>
+
+                    <div id="custos-chapeacao"></div>
+
+                    <section class="tabela-secao">
+                        <h2>Orçamentos</h2>
+                        <div id="lista-orcamentos"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Finanças Fluxo Livre &copy; 2026 - Desenvolvimento Web I</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
